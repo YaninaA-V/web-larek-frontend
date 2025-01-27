@@ -1,44 +1,36 @@
-import './scss/styles.scss';
 
-interface IProductCard {
-    _id: string;
+export interface IProductCard {
+    id: string;
+    description: string;
+    image: string;
     title: string;
     category: string;
-    description: string;
-    price: number;
-    image: string;
+    price: number | null;
+    button: HTMLButtonElement;    
 }
 
-interface IModalForms {
+export interface IModelForms {    
     payment: string;
     address: string;
     email: string;
     phone: string;
+}
+
+export interface IOrder extends IModelForms {
+    items: string[];
     total: number;
-    setBuyInfo(cards: IProductCard[]): void;
-    getTotalPriceInfo(total: string): IModalForms;
-    setBuyerInfo(email: string, phone: string): IModalForms;
-    setCartPayInfo(payment: string, address: string): IModalForms;
-    checkValidation(data: Record<keyof TPaymentDelivery, string>): boolean;
 }
 
-interface IProductCardsData {
-    cards: IProductCard[];
-    addProduct(card: IProductCard): void;
-    deleteProduct(cardId: string): void;
-    getProduct(cardId: string): IProductCard;
-    checkStatus(data: Record<keyof TCart, string>): boolean;
+export interface IProductCardsData {
+    catalog: IProductCard[];
+    basket: string[];
+    order: IOrder | null;
+}
+export interface IOrderResult {
+    id:string;
+    total: number;
 }
 
-export type TPublicInfo = Pick<IProductCard, 'title' | 'category' | 'image' | 'price'>;
+export type IBasketItem = Pick<IProductCard, 'id' | 'title' | 'price'>;
 
-export type TCardInfo = Pick<IProductCard, 'title' | 'category' | 'description' | 'image' | 'price'>;
-
-export type TCart = Pick<IProductCard, 'title' | 'price'> & Pick<IModalForms, 'total'>;
-
-export type TPaymentDelivery = Pick<IModalForms, 'payment' | 'address'>;
-
-export type TBuyerDetails = Pick<IModalForms, 'email' | 'phone'>;
-
-export type TSuccessBuy = Pick<IModalForms, 'total'>;
-
+export type FormErrors = Partial<Record<keyof IOrder, string>>;
