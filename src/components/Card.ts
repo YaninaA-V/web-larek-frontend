@@ -62,6 +62,11 @@ export class Card extends Component<ICard> {
 
 	set category(value: string) {
 		this.setText(this.cardCategory, value);
+
+		const baseClass = 'card__category';
+
+		this.cardCategory.className = baseClass;
+
 		if (value === 'софт-скил') {
 			this.cardCategory.classList.add('card__category_soft');
 		} else if (value === 'другое') {

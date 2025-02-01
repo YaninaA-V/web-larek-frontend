@@ -46,7 +46,21 @@ export class CardData extends Model<IProductCardsData> {
         this.order.total = this.order.total - item.price;
         this.emitChanges('basket:changed');
     }
+
+    clearBasket() {
+        this.basket = [];
+        this.order.items = [];
+        this.emitChanges('basket:chaned');
+    }
     
+    clearOrder() {
+        this.order.address = '';
+        this.order.email = '';
+        this.order.payment = '';
+        this.order.phone = '';
+        this.order.total = 0;
+      }
+      
     checkProduct(id: string) {
         return !!this.basket.find((item) => item.id === id);
     }

@@ -26,7 +26,7 @@ events.onAll(({ eventName, data }) => {
 
 
 const cardTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
-const cardPreviewTemlate = ensureElement<HTMLTemplateElement>('#card-preview');
+const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const cardBasket = ensureElement<HTMLTemplateElement>('#card-basket');
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
@@ -67,7 +67,7 @@ events.on('card:select', (items: IProductCard) => {
 })
 
 events.on('preview:changed', (item: IProductCard) => { 
-    const card = new Card(cloneTemplate(cardPreviewTemlate), {        
+    const card = new Card(cloneTemplate(cardPreviewTemplate), {        
         onClick: () => events.emit('card:add', item),
     });
     card.disabledButton(appData.order.items, item.id, item.price);
@@ -128,7 +128,7 @@ events.on('card:remove', (item: IProductCard) => {
     events.emit('basket:open');
 })
 
-events.on('formErrorsByer:change', (errors: Partial<IModelForms>) => {
+events.on('formErrorsBuyer:change', (errors: Partial<IModelForms>) => {
     const { email, phone } = errors;
     contacts.valid = !email && !phone;
     contacts.errors = Object.values({email, phone}).filter(i => !!i).join('; ');
@@ -136,6 +136,7 @@ events.on('formErrorsByer:change', (errors: Partial<IModelForms>) => {
 
 events.on(/^contacts\..*:change/, (data: { field: keyof IModelForms, value: string}) => {
     appData.setBuyerField(data.field, data.value);
+    events.emit('formErrorsBuyer:change', appData.formErrors);       
 });
 
 events.on('order:submit', () => {
@@ -147,10 +148,10 @@ events.on('order:submit', () => {
             errors: []
         }),
     });
+    events.emit('formErrorsOrder:change', appData.formErrors);
 })
 
-events.on('formErrorsOrder:change', (errors: Partial<IModelForms>) => {
-    console.log('Received errors:', errors); 
+events.on('formErrorsOrder:change', (errors: Partial<IModelForms>) => {   
     const { address, payment } = errors;
     order.valid = !address && !payment;
     order.errors = Object.values({address, payment}).filter(i => !!i).join('; ');
@@ -158,6 +159,7 @@ events.on('formErrorsOrder:change', (errors: Partial<IModelForms>) => {
 
 events.on(/^order\..*:change/, (data: { field: keyof IModelForms, value: string}) => {
     appData.setOrderField(data.field, data.value);
+    events.emit('formErrorsOrder:change', appData.formErrors);
 });
 
 events.on('order:open', () => {
@@ -169,15 +171,26 @@ events.on('order:open', () => {
             errors: []
         }),
     });
+    events.emit('formErrorsOrder:change', appData.formErrors);
 })
 
 events.on('payment:change', (data: { name: string }) => {
-    appData.order.payment = data.name;
+    appData.setOrderField('payment', data.name);
+})
+
+events.on('address:change', (data: { name: string }) => {
+    appData.setOrderField('address', data.name);
 })
 
 events.on('contacts:submit', () => {
+    const errors = appData.formErrors;
+    if (errors.email || errors.phone) {
+        events.emit('formErrorsBuyer:change', errors);
+        return; 
+    }    
+
     api.orderCards(appData.order)
-    .then((result) => {
+    .then(() => {
         const success = new Success(cloneTemplate(successTemplate), {
             onClick: () => {
                 modal.close();
@@ -188,7 +201,10 @@ events.on('contacts:submit', () => {
                 total: appData.getTotal()
             })
         });
+        appData.clearBasket();
+        appData.clearOrder();
         page.counter = appData.basket.length;
+        events.emit('basket:changed');
     })
     .catch(err => {
         console.error(err);

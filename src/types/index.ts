@@ -19,6 +19,11 @@ export interface IModelForms {
 export interface IOrder extends IModelForms {
     items: string[];
     total: number;
+    payment: string;
+    address: string;
+    email: string;
+    phone: string;
+
 }
 
 export interface IProductCardsData {
@@ -27,7 +32,7 @@ export interface IProductCardsData {
     order: IOrder | null;
 }
 export interface IOrderResult {
-    id:string;
+    id: string; 
     total: number;
 }
 
